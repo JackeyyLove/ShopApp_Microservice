@@ -13,3 +13,5 @@ spring:
             ddl-auto: update
     application:
         name: ORDER-SERVICE
+    config:
+        import: configserver:http://localhost:9296
