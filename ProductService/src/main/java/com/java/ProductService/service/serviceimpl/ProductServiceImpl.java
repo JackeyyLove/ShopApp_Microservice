@@ -27,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
                 .quantity(productRequest.getQuantity())
                 .price(productRequest.getPrice())
                 .build();
-        productRepository.save(product);
+        product = productRepository.save(product);
         return product.getProductId();
     }
 
