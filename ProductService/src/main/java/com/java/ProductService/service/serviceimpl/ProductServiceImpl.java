@@ -39,4 +39,16 @@ public class ProductServiceImpl implements ProductService {
         ProductResponse productResponse = modelMapper.map(product, ProductResponse.class);
         return productResponse;
     }
+
+    @Override
+    public void reduceQuantity(Long productId, Long quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductServiceCustomException("Product with given Id not found", "PRODUCT_NOT_FOUND"));
+        if (product.getQuantity() < quantity) {
+            throw new ProductServiceCustomException("Product is inadequate quantity", "INSUFFICIENT_QUANTITY");
+        }
+        product.setQuantity(product.getQuantity() - quantity);
+        productRepository.save(product);
+        log.info("Product quantity updated successfully");
+    }
 }
