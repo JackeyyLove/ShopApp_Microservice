@@ -1,6 +1,6 @@
 package com.java.OrderService.controller;
 
-import com.java.OrderService.external.ProductService;
+import com.java.OrderService.external.client.ProductService;
 import com.java.OrderService.model.OrderRequest;
 import com.java.OrderService.service.OrderService;
 import lombok.extern.log4j.Log4j2;
