@@ -22,7 +22,6 @@ public class OrderController {
     private ProductService productService;
     @PostMapping("/placeOrder")
     public ResponseEntity<Long> placeOrder(@RequestBody OrderRequest orderRequest) {
-        productService.reduceQuantity(orderRequest.getProductId(), orderRequest.getQuantity());
         Long orderId = orderService.placeOrder(orderRequest);
         log.info("Order Id: {}", orderId);
         return new ResponseEntity<>(orderId, HttpStatus.OK);

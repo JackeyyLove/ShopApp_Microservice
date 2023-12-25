@@ -14,7 +14,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 @Log4j2
 public class PaymentServiceImpl implements PaymentService {
-    private TransactionDetailsRepository transactionDetailsRepository;
+    private  final TransactionDetailsRepository transactionDetailsRepository;
     @Override
     public Long doPayment(PaymentRequest paymentRequest) {
         log.info("Recording payment details: {}", paymentRequest);
