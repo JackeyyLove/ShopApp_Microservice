@@ -1,7 +1,9 @@
 package com.java.PaymentService.service.impl;
 
 import com.java.PaymentService.entity.TransactionDetails;
+import com.java.PaymentService.model.PaymentMode;
 import com.java.PaymentService.model.PaymentRequest;
+import com.java.PaymentService.model.PaymentResponse;
 import com.java.PaymentService.repository.TransactionDetailsRepository;
 import com.java.PaymentService.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +31,21 @@ public class PaymentServiceImpl implements PaymentService {
         transactionDetailsRepository.save(transactionDetails);
         log.info("Transaction completed with id: {}", transactionDetails.getId());
         return transactionDetails.getId();
+    }
+
+    @Override
+    public PaymentResponse getPaymentDetailsByOrderId(Long orderId) {
+        log.info("Getting payment details for the OrderId");
+        TransactionDetails transactionDetails = transactionDetailsRepository.findByOrderId(orderId);
+        PaymentResponse paymentResponse = PaymentResponse.builder()
+                .paymentId(transactionDetails.getId())
+                .paymentMode(PaymentMode.valueOf(transactionDetails.getPaymentMode()))
+                .paymentDate(transactionDetails.getPaymentDate())
+                .orderId(transactionDetails.getOrderId())
+                .status(transactionDetails.getPaymentStatus())
+                .amount(transactionDetails.getAmount())
+                .build();
+
+        return paymentResponse;
     }
 }

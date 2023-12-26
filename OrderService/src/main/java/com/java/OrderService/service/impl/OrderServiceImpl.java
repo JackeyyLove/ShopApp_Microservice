@@ -5,6 +5,7 @@ import com.java.OrderService.exception.CustomException;
 import com.java.OrderService.external.client.PaymentService;
 import com.java.OrderService.external.client.ProductService;
 import com.java.OrderService.external.request.PaymentRequest;
+import com.java.OrderService.external.response.PaymentResponse;
 import com.java.OrderService.external.response.ProductResponse;
 import com.java.OrderService.model.OrderRequest;
 import com.java.OrderService.model.OrderResponse;
@@ -72,6 +73,11 @@ public class OrderServiceImpl implements OrderService {
                 "http://PRODUCT-SERVICE/product/" + order.getProductId(),
                 ProductResponse.class
         );
+        log.info("Getting payment information from the payment service");
+        PaymentResponse paymentResponse = restTemplate.getForObject(
+                "http://PAYMENT-SERVICE/payment/order/" + orderId,
+                PaymentResponse.class
+        );
         OrderResponse.ProductDetails productDetails
                 = OrderResponse.ProductDetails.builder()
                 .productName(productResponse.getProductName())
@@ -79,12 +85,20 @@ public class OrderServiceImpl implements OrderService {
                 .quantity(productResponse.getQuantity())
                 .price(productResponse.getPrice())
                 .build();
+        OrderResponse.PaymentDetails paymentDetails
+                = OrderResponse.PaymentDetails.builder()
+                .paymentId(paymentResponse.getPaymentId())
+                .paymentDate(paymentResponse.getPaymentDate())
+                .paymentMode(paymentResponse.getPaymentMode())
+                .status(paymentResponse.getStatus())
+                .build();
         OrderResponse orderResponse = OrderResponse.builder()
                 .orderId(order.getId())
                 .orderStatus(order.getOrderStatus())
                 .amount(order.getAmount())
                 .orderDate(order.getOrderDate())
                 .productDetails(productDetails)
+                .paymentDetails(paymentDetails)
                 .build();
 
         return orderResponse;
