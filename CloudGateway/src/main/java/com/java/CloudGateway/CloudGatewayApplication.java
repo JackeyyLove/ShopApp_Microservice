@@ -1,5 +1,6 @@
 package com.java.CloudGateway;
 
+import com.java.CloudGateway.utility.KeyResolver;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -23,6 +25,10 @@ public class CloudGatewayApplication {
 		SpringApplication.run(CloudGatewayApplication.class, args);
 	}
 
+	@Bean
+	KeyResolver userKeyResolver() {
+		return exchange -> Mono.just(exchange.getRequest().getQueryParams().getFirst("user"));
+	}
 	@Bean
 	public Customizer<Resilience4JCircuitBreakerFactory> globalCustomConfiguration() {
 		CircuitBreakerConfig circuitBreakerConfig = CircuitBreakerConfig.custom()
