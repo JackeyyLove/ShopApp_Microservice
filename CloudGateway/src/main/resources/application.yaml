@@ -5,49 +5,50 @@ spring:
   application:
     name: API-GATEWAY
   config:
-    import: configserver:http://localhost:9296
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:9296}
   cloud:
     gateway:
       routes:
-        - id: ORDER-SERVICE
-          uri: lb://ORDER-SERVICE
+        - id : ORDER-SERVICE
+          uri: http://order-service-svc
           predicates:
             - Path=/order/**
           filters:
             - name: CircuitBreaker
-            - args:
+              args:
                 name: ORDER-SERVICE
                 fallbackuri: forward:/orderServiceFallBack
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 10 #Refill per second
-                redis-rate-limiter.burstCapacity: 20 #Maximum request per second
-                redis-rate-limiter.requestedTokens: 1
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
         - id: PAYMENT-SERVICE
-          uri: lb://PAYMENT-SERVICE
+          uri: http://payment-service-svc
           predicates:
             - Path=/payment/**
           filters:
             - name: CircuitBreaker
-            - args:
+              args:
                 name: PAYMENT-SERVICE
                 fallbackuri: forward:/paymentServiceFallBack
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 10 #Refill per second
-                redis-rate-limiter.burstCapacity: 20 #Maximum request per second
-                redis-rate-limiter.requestedTokens: 1
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
         - id: PRODUCT-SERVICE
-          uri: lb://PRODUCT-SERVICE
+          uri: http://product-service-svc
           predicates:
             - Path=/product/**
           filters:
             - name: CircuitBreaker
-            - args:
+              args:
                 name: PRODUCT-SERVICE
                 fallbackuri: forward:/productServiceFallBack
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 10 #Refill per second
-                redis-rate-limiter.burstCapacity: 20 #Maximum request per second
-                redis-rate-limiter.requestedTokens: 1
+                redis-rate-limiter.replenishRate: 1
+                redis-rate-limiter.burstCapacity: 1
+  data:
+    redis:
+      host: redis
+      port: 6379

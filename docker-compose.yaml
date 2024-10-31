@@ -1,0 +1,116 @@
+version: '3.9'
+
+services:
+  order-service:
+    build:
+      context: ./OrderService
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_HOST=micro-db
+      - CONFIG_SERVER_URL=http://config-server:9296
+    depends_on:
+      - micro-db
+      - config-server
+      - service-registry
+    networks:
+      - default
+
+  product-service:
+    build:
+      context: ./ProductService
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=micro-db
+      - CONFIG_SERVER_URL=http://config-server:9296
+    depends_on:
+      - micro-db
+      - config-server
+      - service-registry
+    networks:
+      - default
+
+  payment-service:
+    build:
+      context: ./PaymentService
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_HOST=micro-db
+      - CONFIG_SERVER_URL=http://config-server:9296
+    depends_on:
+      - micro-db
+      - config-server
+      - service-registry
+    networks:
+      - default
+
+  config-server:
+    build:
+      context: ./ConfigServer
+      dockerfile: Dockerfile
+    image: config-server:latest
+    environment:
+      - EUREKA_SERVICE_ADDRESS=http://service-registry:8761/eureka
+    ports:
+      - "9296:9296"
+    networks:
+      - default
+    depends_on:
+      - service-registry
+
+  micro-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql  # Named volume for database persistence
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - default
+
+  service-registry:
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - default
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 4318:4318
+      - 16686:16686
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true  # Enable OTLP receiver on HTTP port 4318
+    networks:
+      - default
+
+#  otel-collector:
+#    image: otel/opentelemetry-collector:latest
+#    ports:
+#      - "4318:4318"  # OTLP HTTP receiver
+#    networks:
+#      - default
+#    depends_on:
+#      - jaeger
+#    command: [
+#      "--config=/etc/otel-collector-config.yml"
+#    ]
+#    volumes:
+#      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  mysql-data:
