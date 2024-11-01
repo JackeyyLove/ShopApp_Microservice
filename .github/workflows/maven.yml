@@ -32,9 +32,13 @@ jobs:
 
       - name: Build Docker image for ${{ matrix.service }}
         run: |
+          # Convert service name to lowercase
+          service_name=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
           cd ${{ matrix.service }}
-          docker build -t ${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.service | toLower }}-shop-app-microservice:latest .
+          docker build -t ${{ env.DOCKER_HUB_USERNAME }}/${service_name}-shop-app-microservice:latest .
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ env.DOCKER_HUB_USERNAME }}/${{ matrix.service | toLower }}-shop-app-microservice:latest
+          # Convert service name to lowercase
+          service_name=$(echo "${{ matrix.service }}" | tr '[:upper:]' '[:lower:]')
+          docker push ${{ env.DOCKER_HUB_USERNAME }}/${service_name}-shop-app-microservice:latest
