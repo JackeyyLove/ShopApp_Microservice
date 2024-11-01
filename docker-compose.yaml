@@ -8,8 +8,14 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - DB_HOST=micro-db
-      - CONFIG_SERVER_URL=http://config-server:9296
+      OTEL_SERVICE_NAME: "ORDER-SERVICE"
+      OTEL_TRACES_EXPORTER: "jaeger, zipkin"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14250"
+      OTEL_EXPORTER_ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+      OTEL_METRICS_EXPORTER: "logging"
+      OTEL_LOGS_EXPORTER: "logging"
+      DB_HOST: "micro-db"
+      CONFIG_SERVER_URL: "http://config-server:9296"
     depends_on:
       - micro-db
       - config-server
@@ -24,8 +30,14 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DB_HOST=micro-db
-      - CONFIG_SERVER_URL=http://config-server:9296
+      OTEL_SERVICE_NAME: "PRODUCT-SERVICE"
+      OTEL_TRACES_EXPORTER: "jaeger, zipkin"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14250"
+      OTEL_EXPORTER_ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+      OTEL_METRICS_EXPORTER: "logging"
+      OTEL_LOGS_EXPORTER: "logging"
+      DB_HOST: "micro-db"
+      CONFIG_SERVER_URL: "http://config-server:9296"
     depends_on:
       - micro-db
       - config-server
@@ -40,8 +52,14 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_HOST=micro-db
-      - CONFIG_SERVER_URL=http://config-server:9296
+      OTEL_SERVICE_NAME: "PAYMENT-SERVICE"
+      OTEL_TRACES_EXPORTER: "jaeger, zipkin"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14250"
+      OTEL_EXPORTER_ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+      OTEL_METRICS_EXPORTER: "logging"
+      OTEL_LOGS_EXPORTER: "logging"
+      DB_HOST: "micro-db"
+      CONFIG_SERVER_URL: "http://config-server:9296"
     depends_on:
       - micro-db
       - config-server
@@ -55,7 +73,13 @@ services:
       dockerfile: Dockerfile
     image: config-server:latest
     environment:
-      - EUREKA_SERVICE_ADDRESS=http://service-registry:8761/eureka
+      EUREKA_SERVICE_ADDRESS: "http://service-registry:8761/eureka"
+      OTEL_SERVICE_NAME: "CONFIG-SERVER"
+      OTEL_TRACES_EXPORTER: "jaeger, zipkin"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14250"
+      OTEL_EXPORTER_ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+      OTEL_METRICS_EXPORTER: "logging"
+      OTEL_LOGS_EXPORTER: "logging"
     ports:
       - "9296:9296"
     networks:
@@ -79,34 +103,55 @@ services:
     build:
       context: ./service-registry
       dockerfile: Dockerfile
+    environment:
+      OTEL_SERVICE_NAME: "SERVICE-REGISTRY"
+      OTEL_TRACES_EXPORTER: "jaeger, zipkin"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "http://jaeger:14250"
+      OTEL_EXPORTER_ZIPKIN_ENDPOINT: "http://zipkin:9411/api/v2/spans"
+      OTEL_METRICS_EXPORTER: "logging"
+      OTEL_LOGS_EXPORTER: "logging"
     ports:
       - "8761:8761"
     networks:
       - default
 
-  jaeger:
+#  collector:
+#    container_name: collector
+#    image: otel/opentelemetry-collector-contrib:0.91.0
+#    command:
+#      - --config=/etc/otelcol-contrib/otel-collector.yml
+#    volumes:
+#      - ./docker/collector/otel-collector.yml:/etc/otelcol-contrib/otel-collector.yml
+#    ports:
+#      - "4317" # OTLP gRPC receiver
+#      - "8889" # Prometheus exporter metrics
+#    depends_on:
+#      - loki
+#      - jaeger-all-in-one
+#      - zipkin-all-in-one
+#     # - tempo
+#    networks:
+#      - default
+  jaeger-all-in-one:
+    container_name: jaeger
     image: jaegertracing/all-in-one:latest
-    ports:
-      - 4318:4318
-      - 16686:16686
     environment:
-      - COLLECTOR_OTLP_ENABLED=true  # Enable OTLP receiver on HTTP port 4318
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"
+      - "4317"
     networks:
       - default
 
-#  otel-collector:
-#    image: otel/opentelemetry-collector:latest
-#    ports:
-#      - "4318:4318"  # OTLP HTTP receiver
-#    networks:
-#      - default
-#    depends_on:
-#      - jaeger
-#    command: [
-#      "--config=/etc/otel-collector-config.yml"
-#    ]
-#    volumes:
-#      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+  zipkin-all-in-one:
+    container_name: zipkin
+    image: openzipkin/zipkin:latest
+    restart: always
+    ports:
+      - "9411:9411"
+    networks:
+      - default
+
 
 networks:
   default:
