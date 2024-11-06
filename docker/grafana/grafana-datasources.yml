@@ -87,4 +87,4 @@ datasources:
         spanEndTimeShift: '1h'
         filterByTraceID: true
         filterBySpanID: true
-        tags: [ { key: 'service', value: 'job' }
+        tags: [ { key: 'service', value: 'job' } ]
